@@ -5,6 +5,19 @@ spring:
   application:
     name: operator-service
 
+  datasource:
+    url: jdbc:mysql://mysql-db:3306/recipes_db
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
 eureka:
   client:
     register-with-eureka: true

@@ -10,6 +10,6 @@ public class SearchController {
 
     @GetMapping("/test")
     public String test() {
-        return "Hola mundo 2";
+        return "Hola mundo 2 nuevo";
     }
 }
