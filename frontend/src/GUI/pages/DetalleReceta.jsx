@@ -6,7 +6,7 @@ import styles from './styles/DetalleReceta.module.css';
 
 export default function DetalleReceta() {
   const { id } = useParams();
-  const { data: receta, loading, error } = useFetch(`${process.env.REACT_APP_API_URL}/utils/recetas/${id}`);
+  const { data: receta, loading, error } = useFetch(`${process.env.REACT_APP_API_URL}/api/recetas/${id}`);
 
   if (loading) {
     return (
@@ -34,8 +34,8 @@ export default function DetalleReceta() {
   const ingredientesList = Array.isArray(receta.ingredientes)
     ? receta.ingredientes
     : receta.ingredientes
-    ? receta.ingredientes.split(',').map((i) => i.trim())
-    : [];
+      ? receta.ingredientes.split(',').map((i) => i.trim())
+      : [];
 
   return (
     <div className={styles.container}>
@@ -44,7 +44,19 @@ export default function DetalleReceta() {
         <h2 className={styles.heading}>{receta.nombre}</h2>
 
         <div className={styles.card}>
-          <img src={receta.imagen} alt={receta.nombre} className={styles.image} />
+
+          <td>
+            {(receta?.imagen && receta.imagen.trim()) ? (
+              <img
+                src={receta.imagen}
+                alt={receta.nombre || 'Receta'}
+                className={styles.image}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : (
+              <div className={styles.placeholder}>Sin imagen</div>
+            )}
+          </td>
 
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Ingredientes</h3>

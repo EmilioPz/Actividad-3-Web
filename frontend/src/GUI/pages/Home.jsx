@@ -8,12 +8,24 @@ import { useTiempoPromedio } from '../../utils/hooks/useTiempoPromedio';
 import styles from './styles/Home.module.css';
 
 export default function Home() {
-  const { data: recetas, loading, error, refetch } = useFetch(`${process.env.REACT_APP_API_URL}/utils/recetas`);
+  const { data, loading, error, errorText, refetch } = useFetch(
+    `${process.env.REACT_APP_API_URL}/api/recetas`
+  );
+
+  const recetas = Array.isArray(data)
+    ? data
+    : (Array.isArray(data?.content) ? data.content : []);
+
   const ingredientesUnicos = useIngredientesUnicos(recetas);
   const tiempoPromedio = useTiempoPromedio(recetas);
 
   if (loading) return <p className={styles.loading}>Cargando recetas...</p>;
-  if (error) return <p className={styles.error}>Error al cargar recetas.</p>;
+  if (error) return (
+    <div className={styles.error}>
+      Error al cargar recetas {errorText ? `: ${errorText}` : ''}.  
+      Revisa consola (STATUS/BODY).
+    </div>
+  );
 
   return (
     <div className={styles.container}>

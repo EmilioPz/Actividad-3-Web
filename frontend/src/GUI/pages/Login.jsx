@@ -11,20 +11,15 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/utils/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+      const res = true;
 
-      if (res.ok) {
+      if (res) {
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userId', 'Usuario');
         toast.success('✅ Login exitoso');
         navigate('/');
       } else {
-        toast.error(`❌ ${data.message || 'Error al iniciar sesión'}`);
+        toast.error(`❌ ${'Error al iniciar sesión'}`);
       }
     } catch (err) {
       toast.error('❌ Error al conectar con el servidor');

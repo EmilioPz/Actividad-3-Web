@@ -11,7 +11,7 @@ export default function AgregarReceta() {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = `${process.env.REACT_APP_API_URL}/utils/recetas`;
+  const API_URL = `${process.env.REACT_APP_API_URL}/api/recetas`;
 
   const isValidURL = (str) => {
     try {
@@ -32,8 +32,8 @@ export default function AgregarReceta() {
 
     const ingredientesArray = ingredientesTexto
       .split(',')
-      .map(i => i.trim())
-      .filter(i => i.length > 0);
+      .map((i) => i.trim())
+      .filter((i) => i.length > 0);
 
     if (nombre.trim().length < 3) {
       showToast('El nombre debe tener al menos 3 caracteres.', 'error');
@@ -68,10 +68,22 @@ export default function AgregarReceta() {
         body: JSON.stringify(nuevaReceta),
       });
 
-      if (!res.ok) throw new Error('Error al guardar la receta');
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(errText || `HTTP ${res.status}`);
+      }
 
-      const data = await res.json();
-      showToast(`Receta agregada (ID: ${data.recetaId}) 🎉`, 'success');
+      let data = null;
+      const raw = await res.text();
+      if (raw && raw.trim().length > 0) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+        }
+      }
+
+      const recetaId = data?.recetaId ?? data?.id ?? null;
+      showToast(`Receta agregada${recetaId ? ` (ID: ${recetaId})` : ''} 🎉`, 'success');
 
       setNombre('');
       setIngredientesTexto('');

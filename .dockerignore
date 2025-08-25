@@ -1,0 +1,18 @@
+# Maven / Java
+**/target/
+**/.classpath
+**/.project
+**/.settings/
+
+# Node / IDE
+node_modules/
+**/.idea/
+**/.vscode/
+
+# Git
+.git
+.gitignore
+
+# Docker
+**/Dockerfile~
+**/*.log

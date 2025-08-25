@@ -3,17 +3,16 @@ import { Table, Form, Pagination, Spinner } from 'react-bootstrap';
 import styles from './styles/TablaRecetas.module.css';
 import BotoneraReceta from './BotoneraReceta';
 import { toast } from 'react-toastify';
+import { apiGetArray } from '../../api';
 
-const API_URL = `${process.env.REACT_APP_API_URL}/utils`;
+const API_BASE = '/api';
 
 export default function TablaRecetas({ onRefresh }) {
   const [recetas, setRecetas] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [newImage, setNewImage] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false); // NEW
 
   const recetasPorPagina = 8;
 
@@ -21,68 +20,21 @@ export default function TablaRecetas({ onRefresh }) {
     cargarRecetas();
   }, []);
 
-  const cargarRecetas = () => {
-    setLoading(true);
-    fetch(`${API_URL}/recetas`)
-      .then((res) => res.json())
-      .then((data) => setRecetas(data))
-      .catch(() => toast.error('❌ Error al cargar recetas'))
-      .finally(() => setLoading(false));
-  };
-
-  const startEdit = (receta) => {
-    setEditId(receta.id);
-    setNewImage(receta.imagen);
-  };
-
-  const saveEdit = (id) => {
-    if (!newImage.trim()) {
-      toast.warn('⚠️ La imagen no puede estar vacía');
-      return;
+  const cargarRecetas = async () => {
+    try {
+      setLoading(true);
+      const data = await apiGetArray(`${API_BASE}/recetas`);
+      setRecetas(Array.isArray(data) ? data : []);
+    } catch (e) {
+      toast.error('❌ Error al cargar recetas');
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-
-    setActionLoading(true);
-    fetch(`${API_URL}/recetas/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imagen: newImage }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(() => {
-        toast.dismiss();
-        toast.success('✅ Imagen actualizada');
-        setEditId(null);
-        cargarRecetas();
-        if (onRefresh) onRefresh();
-      })
-      .catch(() => toast.dismiss() || toast.error('❌ Error al actualizar imagen'))
-      .finally(() => setActionLoading(false));
   };
 
-  const handleEliminar = (id) => {
-    if (!window.confirm('¿Seguro que quieres eliminar esta receta?')) return;
-
-    setActionLoading(true);
-    fetch(`${API_URL}/recetas/${id}`, { method: 'DELETE' })
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data) => {
-        toast.dismiss();
-        toast.success(data.message || '🗑️ Receta eliminada correctamente');
-        cargarRecetas();
-        if (onRefresh) onRefresh();
-      })
-      .catch(() => toast.dismiss() || toast.error('❌ Error al eliminar receta'))
-      .finally(() => setActionLoading(false));
-  };
-
-  const recetasFiltradas = recetas.filter((r) =>
-    r.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  const recetasFiltradas = (recetas || []).filter((r) =>
+    (r.nombre || '').toLowerCase().includes(busqueda.toLowerCase())
   );
 
   const totalPaginas = Math.ceil(recetasFiltradas.length / recetasPorPagina);
@@ -122,19 +74,16 @@ export default function TablaRecetas({ onRefresh }) {
             <tbody>
               {recetasPagina.map((r) => (
                 <tr key={r.id}>
-                  <td>
-                    {editId === r.id ? (
-                      <Form.Control
-                        value={newImage}
-                        onChange={(e) => setNewImage(e.target.value)}
-                        size="sm"
-                      />
-                    ) : (
+                <td>
+                    {(r?.imagen && r.imagen.trim()) ? (
                       <img
                         src={r.imagen}
-                        alt={r.nombre}
+                        alt={r.nombre || 'Receta'}
                         className={styles.image}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
                       />
+                    ) : (
+                      <div className={styles.placeholder}>Sin imagen</div>
                     )}
                   </td>
                   <td>{r.nombre}</td>
@@ -144,11 +93,7 @@ export default function TablaRecetas({ onRefresh }) {
                       isEditing={editId === r.id}
                       recetaId={r.id}
                       receta={r}
-                      onSave={saveEdit}
                       onCancel={() => setEditId(null)}
-                      onEdit={startEdit}
-                      onDelete={handleEliminar}
-                      disabled={actionLoading} // Pass loading state to disable buttons if needed
                     />
                   </td>
                 </tr>
