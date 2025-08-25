@@ -1,15 +1,32 @@
 package recetario.search_service.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import recetario.search_service.RecipeService;
+import recetario.search_service.entities.Recipe;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/recetas")
 public class SearchController {
+    private final RecipeService service;
 
-    @GetMapping("/test")
-    public String test() {
-        return "Hola mundo 2 nuevo";
+    public SearchController(RecipeService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public Recipe guardar(@RequestBody Recipe receta) {
+        return service.save(receta);
+    }
+
+    @GetMapping("/buscar")
+    public List<Recipe> buscarNombre(@RequestParam String texto) {
+        return service.search(texto);
+    }
+
+    @GetMapping
+    public Iterable<Recipe> listar() {
+        return service.list();
     }
 }

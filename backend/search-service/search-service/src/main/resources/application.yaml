@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: search-service
+  elasticsearch:
+    uris: http://elastic:9200
 
 eureka:
   client:
@@ -11,4 +13,4 @@ eureka:
     fetch-registry: true
     registry-fetch-interval-seconds: 10
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+     defaultZone: http://eureka-server:8761/eureka/

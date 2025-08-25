@@ -10,6 +10,22 @@ services:
     networks:
       - microred
 
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elastic
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - microred
+
   eureka-server:
     build: ./eureka-server/eureka-server
     ports:
@@ -41,15 +57,12 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - eureka-server
-      - mysql-db
+        - eureka-server
+        - elastic
     networks:
       - microred
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/recipes_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_ELASTICSEARCH_URIS=http://elastic:9200
 
   operator-service:
     build: ./operator-service/operator-service
